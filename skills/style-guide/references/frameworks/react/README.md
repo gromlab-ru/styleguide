@@ -85,7 +85,8 @@ React component
 ```
 
 SWR управляет cache и request lifecycle. API client сохраняет типизированный wire contract и использует общий
-transport. Если потребителю нужен доменный контракт, source DTO и errors адаптирует domain adapter до записи в cache.
+transport. Если у данных есть доменный владелец, source DTO и errors всегда адаптирует domain adapter до записи в cache,
+независимо от конкретного consumer.
 
 ### Изменение server state
 

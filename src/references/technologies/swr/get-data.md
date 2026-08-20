@@ -209,8 +209,8 @@ export const useGetPet = (id: string | null): UseGetPetResponse => {
 
 ## Domain adapter
 
-Если consumer нужен доменный контракт, не добавляй DTO mapping и интерпретацию source errors в SWR hook. Передай в
-fetcher готовую operation domain adapter:
+Если у данных есть доменный владелец, не добавляй DTO mapping и интерпретацию source errors в SWR hook и не обходи
+adapter для отдельного consumer. Передай в fetcher готовый domain adapter:
 
 ```ts
 const fetcher = ([, petId]: GetPetKey) => getPetAdapter(petId)

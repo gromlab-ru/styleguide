@@ -48,11 +48,14 @@ Server Component
 актуальным официальным RSC-путём, но перед внедрением проверь фактическую версию SWR: API появился в 2.5 и остаётся
 экспериментальным.
 
-Server Component импортирует только server-safe key generator и server API client:
+Server Component импортирует server-safe key generator и named domain adapter. Server API client используй напрямую
+только для данных без доменного владельца:
 
 ```tsx
 import { preload, SWRConfig } from 'swr'
 
+import { getCurrentUserAdapter } from 'domains/auth'
+import { getPetAdapter } from 'domains/pet'
 import { getCurrentUserKey } from 'path/to/use-get-current-user/get-current-user-key'
 import { getPetKey } from 'path/to/use-get-pet/get-pet-key'
 
@@ -65,8 +68,8 @@ export const PetPage = async ({ petId }: PetPageProps) => {
   }
 
   const cacheData = {
-    ...preload(petKey, () => petStoreServerApi.pets.getPet(petId)),
-    ...preload(currentUserKey, () => petStoreServerApi.users.getCurrentUser())
+    ...preload(petKey, () => getPetAdapter(petId)),
+    ...preload(currentUserKey, () => getCurrentUserAdapter())
   }
 
   return (
@@ -83,8 +86,10 @@ export const PetPage = async ({ petId }: PetPageProps) => {
 Client Component вызывает обычный hook с тем же key generator. SWR использует server-loaded result для initial render,
 записывает его в client cache и использует client fetcher для последующих revalidations.
 
-Имена server API client и компонентов условны. Настрой server client по runtime-правилам технологии
-[`REST API`](../rest-api/README.md) и не импортируй browser client в server module graph.
+Имена adapters и компонентов условны. Adapter должен быть server-safe и использовать подходящий transport. Если
+интеграция зависит от request context, импортируй capability из server facet домена. Не импортируй browser adapter или
+client hook в server module graph. Для данных без доменного владельца настрой server API client по runtime-правилам
+технологии [`REST API`](../rest-api/README.md).
 
 ## Request scope
 
