@@ -1,6 +1,0 @@
-export * as service from './services/get-pet/get-pet.service'
-export { isPetDomainError, PET_ERROR_CODE, PetDomainError } from './errors'
-export { getPetKey } from './hooks/use-get-pet/get-pet-key'
-export type { PetErrorCode, PetErrorDetails } from './errors'
-export type { GetPetKey } from './hooks/use-get-pet/types/use-get-pet.type'
-export type { Pet } from './types'

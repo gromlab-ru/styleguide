@@ -1,7 +1,23 @@
 # SVG-иконки в React
 
-Для project-owned SVG используй технологию [`SVG sprites`](../../technologies/svg-sprites/README.md). Этот документ
-добавляет только React-specific правила использования generated component.
+Для обычных project-owned, то есть небиблиотечных SVG-иконок, используй технологию
+[`SVG sprites`](../../technologies/svg-sprites/README.md). Этот документ определяет выбор источника и добавляет только
+React-specific правила использования generated component.
+
+## Выбор источника
+
+| Источник изображения | Решение |
+| --- | --- |
+| Иконка предоставлена используемой UI или icon library | Использовать публичный React component библиотеки |
+| Обычная SVG-иконка, которой владеет проект | Добавить в project-owned sprite |
+| Иконка уже находится в project-owned sprite | Использовать generated React component |
+| Illustration или SVG с gradients, masks и filters | Рассмотреть image asset или отдельно проверить sprite |
+
+Не копируй иконку из внешней библиотеки в project-owned sprite без отдельного решения о владении. Библиотека уже
+поддерживает геометрию, визуальный контракт, обновления и accessibility API своего набора.
+
+Sprite выбран для собственных обычных иконок, потому что сохраняет geometry во внешнем cacheable asset, предоставляет
+типизированные имена и устраняет handwritten wrapper для каждого SVG.
 
 ## Перед работой
 
@@ -91,3 +107,4 @@ Module и связывай значения с design tokens:
 - Accessibility соответствует смыслу иконки.
 - В компоненте нет inline SVG geometry и ручного `<svg><use>`.
 - Для сложного SVG выполнена проверка по [`SVG sprite usage`](../../technologies/svg-sprites/usage.md#сложные-svg).
+- Иконка внешней библиотеки не скопирована в project-owned sprite без основания.

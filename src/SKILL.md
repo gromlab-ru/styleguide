@@ -35,7 +35,8 @@ description: >-
 6. Добавь карту React-раздела, если задача относится к React, и выбери профильные React-референсы.
 7. Перед работой со стилями найди центральные variables, tokens и media; если системы нет, добавь tooling-референс и предложи её подготовить.
 8. Добавь SLM Design для архитектурного решения; после него добавь SLM structure, если требуется физическое размещение единиц.
-9. После изменения выполни чеклисты каждого выбранного документа и доступные проверки проекта.
+9. Для доменного сценария добавь domain contracts, expected errors и failure handling до выбора source integration.
+10. После изменения выполни чеклисты каждого выбранного документа и доступные проверки проекта.
 
 Не применяй правила по памяти. Если затронуто несколько областей, прочитай все соответствующие файлы.
 
@@ -75,7 +76,11 @@ Technology reference определяет общий setup и usage. Для hook
 | --- | --- |
 | [`references/frameworks/react/README.md`](references/frameworks/react/README.md) | Для любой React-задачи. Карта components, styling, state management, REST/SWR, realtime, SVG icons и примеров |
 | [`references/frameworks/react/components.md`](references/frameworks/react/components.md) | Дополнительно при создании, изменении или ревью React-компонента, Provider, Guard или Error Boundary |
-| [`references/frameworks/react/rest/README.md`](references/frameworks/react/rest/README.md) | Дополнительно при выборе между SWR hook и прямой REST API operation в React |
+| [`references/frameworks/react/state-management.md`](references/frameworks/react/state-management.md) | Дополнительно при выборе, создании или изменении React state, Zustand store, Context либо другого источника состояния |
+| [`references/frameworks/react/styling.md`](references/frameworks/react/styling.md) | Дополнительно при выборе или изменении style stack React-приложения |
+| [`references/frameworks/react/rest.md`](references/frameworks/react/rest.md) | Дополнительно при выборе между SWR hook и прямой REST API operation в React |
+| [`references/frameworks/react/realtime.md`](references/frameworks/react/realtime.md) | Дополнительно при подключении realtime к React lifecycle или синхронизации GET-cache |
+| [`references/frameworks/react/icons.md`](references/frameworks/react/icons.md) | Дополнительно при выборе или использовании SVG-иконки в React |
 
 JSX/TSX-референс описывает разметку и не заменяет React-референс. Для React-компонента обычно нужны оба.
 
@@ -91,8 +96,14 @@ JSX/TSX-референс описывает разметку и не замен�
 
 | Референс | Загружать | Не использовать для |
 | --- | --- | --- |
+| [`references/architecture/README.md`](references/architecture/README.md) | Карта архитектурных policies и порядок выбора профильных документов | Подробного API SLM или libraries |
 | [`references/architecture/slm-design.md`](references/architecture/slm-design.md) | Выбор владельца, слоя, module boundary, public API и зависимостей по SLM Design | Языкового code style и API framework-библиотек |
 | [`references/architecture/slm-structure.md`](references/architecture/slm-structure.md) | Когда нужно физически разместить уже спроектированные SLM-компоненты, Providers, Guards, Error Boundaries или вложенные модули | Выбора владельца, слоя, границы модуля или public API |
+| [`references/architecture/domains/README.md`](references/architecture/domains/README.md) | Проектирование или изменение предметного домена | Generic utilities и технических возможностей без предметного владельца |
+| [`references/architecture/domains/contracts.md`](references/architecture/domains/contracts.md) | Создание моделей, queries, commands, результатов, DTO mapping или public API домена | Формы transport DTO и generated API |
+| [`references/architecture/domains/adapters.md`](references/architecture/domains/adapters.md) | Связь внешнего источника с доменными моделями, hooks и другими consumers | Прямого экспорта API client и DTO |
+| [`references/architecture/domains/errors.md`](references/architecture/domains/errors.md) | Ожидаемые неуспешные исходы, typed domain errors, codes и factories | Неожиданных programming и integration defects |
+| [`references/architecture/failure-handling.md`](references/architecture/failure-handling.md) | Unexpected defects, telemetry, Error Boundary и async fallback policy | Ожидаемых предметных исходов сценария |
 
 ## Выбор по файлу
 
@@ -105,6 +116,13 @@ JSX/TSX-референс описывает разметку и не замен�
 | `.html` | `languages/html.md` |
 | `.css`, `.scss`, `.sass`, `.less` | `languages/css.md`; при отсутствии variables/media добавить `tooling/style-environment.md` |
 | CSS Module | `languages/css.md`, общие главы + `CSS Modules`; при отсутствии variables/media добавить tooling-референс |
+| React state или Zustand | `frameworks/react/README.md` + `frameworks/react/state-management.md` + референсы изменяемых файлов |
+| REST GET или mutation в React | `frameworks/react/README.md` + `frameworks/react/rest.md` + профильные technology-референсы |
+| Realtime в React | `frameworks/react/README.md` + `frameworks/react/realtime.md` + `technologies/swr/subscriptions.md` |
+| SVG-иконка в React | `frameworks/react/README.md` + `frameworks/react/icons.md` + `technologies/svg-sprites/usage.md` для project-owned иконки |
+| Доменная модель или adapter | `architecture/README.md` + `architecture/slm-design.md` + `architecture/domains/README.md` + `architecture/domains/contracts.md` + `architecture/domains/adapters.md` |
+| Ожидаемые доменные ошибки | Domain-набор + `architecture/domains/errors.md` |
+| Unexpected error или defect | `architecture/failure-handling.md` + референсы framework/technology boundary |
 | Физическая структура SLM | `architecture/slm-structure.md` + референсы изменяемых файлов |
 
 Если изменение React-компонента затрагивает CSS Module, добавь `languages/css.md`.

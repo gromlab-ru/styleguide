@@ -1,11 +1,12 @@
 # GET data
 
-Используй `useSWR` для REST GET-data, которая представляет server state и участвует в React render. Fetcher вызывает
-готовую GET-operation API client по технологии [`REST API`](../rest-api/README.md).
+Используй `useSWR` для REST GET-data, которая представляет server state и участвует в React render. Для данных с
+доменным владельцем fetcher вызывает domain adapter; для недоменных данных — готовую GET-operation API client по
+технологии [`REST API`](../rest-api/README.md).
 
 ```text
 useSWR
-→ GET-operation API client
+→ domain adapter или GET-operation API client
 → HttpClient
 → REST API
 ```
@@ -17,7 +18,8 @@ useSWR
 - focus, browser reconnect и ручная revalidation обновляют данные без собственного `useEffect`;
 - `null` key отключает запрос до появления обязательных параметров;
 - несколько компонентов используют один remote state без копирования в Context или Zustand;
-- fetcher может вызвать доменный service и сохранить в cache готовую доменную модель и доменную ошибку.
+- fetcher может вызвать domain adapter, сохранить в cache доменную модель и передать ожидаемую domain error через
+  проверенный error channel.
 
 ## Только GET
 
@@ -25,10 +27,11 @@ Remote request внутри `useSWR` выполняет только HTTP `GET`.
 
 - Не выполняй через `useSWR` или `useSWRMutation` методы `POST`, `PUT`, `PATCH` и `DELETE`.
 - Не используй `useSWRMutation` как второй способ выполнения REST-запросов.
-- Изменяющие операции вызывай напрямую через API client из event handler, action или владельца сценария.
+- Изменяющие domain operations вызывай через adapter; недоменные operations — напрямую через API client из event
+  handler, action или владельца сценария.
 - После изменения синхронизируй связанные GET keys через `mutate`.
-- Read-operation через `POST` по умолчанию также выполняй напрямую: она не становится GET-cache только из-за того,
-  что не изменяет данные.
+- Read-operation через `POST` по умолчанию также выполняй вне SWR: через domain adapter либо API client для недоменных
+  данных. Она не становится GET-cache только из-за того, что не изменяет данные.
 
 Императивный GET для download, export или другого результата, который не является server state для render, может
 выполняться напрямую через API client. Не помещай binary response и одноразовый side effect в SWR cache без отдельной
@@ -201,50 +204,27 @@ export const useGetPet = (id: string | null): UseGetPetResponse => {
 Не создавай в fetcher самостоятельный `fetch`, URL, auth headers или общую обработку HTTP-ошибок. Эти правила уже
 принадлежат `HttpClient`.
 
-Возвращай стандартный `SWRResponse` без ручной пересборки. Generics `useSWR` и return type fetcher определяют контракт
-`data` и `error`.
+Для простого API hook возвращай стандартный `SWRResponse` без ручной пересборки. Domain hook может предоставить
+собственный contract, если должен отделить typed domain error от unknown defect по следующему разделу.
 
-## Доменный service
+## Domain adapter
 
-Если consumer нужна доменная модель, не добавляй DTO mapping и обработку ошибок в SWR hook. Передай в fetcher функцию
-доменного запроса:
-
-```ts
-const fetcher = ([, petId]: GetPetKey) => domainService.getPet(petId)
-```
-
-Доменный service вызывает лёгкий API client и применяет внутренний mapper домена для преобразования DTO в доменную
-модель. Все ошибки интерпретирует сам service: ожидаемые source errors заменяет предметными доменными исходами, а
-неизвестный сбой оборачивает в отдельную доменную ошибку с исходным значением типа `unknown` в payload. Mapper не создаёт
-ошибки и не управляет control flow. Поэтому SWR hook остаётся простым, а consumer всегда получает безопасную доменную
-границу через `data` и `error`.
-
-Модель и ожидаемые ошибки объявляй в соответствующих внутренних сегментах домена. Hook и service используют эти
-контракты напрямую: типы не принадлежат service и не доступны через его namespace.
-
-Для нескольких ожидаемых исходов достаточно одного конструктора ошибки домена с discriminated union в `details`.
-Общий `DomainError` позволяет выполнить runtime-проверку любой доменной ошибки, а `PetDomainError` определяет конкретный
-домен. Экспортируй стабильные коды через public API домена: consumers не должны повторять строковые литералы. Смысл
-каждого кода кратко зафиксируй в комментарии рядом с декларацией. Храни `code` и `payload` в одном объекте, чтобы
-TypeScript сужал payload по code:
+Если consumer нужен доменный контракт, не добавляй DTO mapping и интерпретацию source errors в SWR hook. Передай в
+fetcher готовую operation domain adapter:
 
 ```ts
-if (isPetDomainError(error)) {
-  switch (error.details.code) {
-    case PET_ERROR_CODE.NOT_FOUND:
-      return error.details.payload.petId
-  }
-}
+const fetcher = ([, petId]: GetPetKey) => getPetAdapter(petId)
 ```
 
-`isDomainError` проверяет любую доменную ошибку, `isPetDomainError` — ошибку конкретного домена.
-Consumer самостоятельно сопоставляет код с пользовательским текстом с учётом контекста и локализации.
-Исходное значение в `payload.error` ошибки неожиданного сбоя предназначено для диагностики; renderer выбирает безопасное
-состояние по доменному коду и не выводит это значение пользователю.
+Domain adapter связывает внешний источник с моделями и ошибками домена по
+[`adapter policy`](../../architecture/domains/adapters.md). SWR отвечает только за key, cache и React lifecycle.
 
-Полные примеры находятся в [`examples/pet-domain/hooks/use-get-pet/`](examples/pet-domain/hooks/use-get-pet/) и
-[`examples/pet-domain/services/get-pet/`](examples/pet-domain/services/get-pet/). Hook принадлежит домену вместе с
-контрактом и service; не размещай его во внешнем общем каталоге hooks.
+Успешный response adapter становится `data`. Разделение typed domain error и unknown defect выполняй по
+[`failure policy`](../../architecture/failure-handling.md), не определяя новую error model внутри SWR hook.
+
+Полный пример находится в
+[`React pet domain`](../../frameworks/react/examples/domains/pet/README.md). Hook принадлежит домену вместе с его
+контрактом и adapter; не размещай его во внешнем общем каталоге hooks.
 
 ## Revalidation после mutation
 
@@ -253,8 +233,8 @@ Consumer самостоятельно сопоставляет код с пол�
 ```ts
 const pet = useGetPet(id)
 
-await petStoreApi.pets.updatePet({ id, name })
-await pet.mutate()
+await updatePetAdapter({ id, name })
+await pet.refresh()
 ```
 
 Revalidation получает каноническое состояние сервера и не предполагает, что response mutation совпадает с GET-data.
@@ -265,7 +245,7 @@ Revalidation получает каноническое состояние сер
 ```ts
 const { mutate } = useSWRConfig()
 
-await petStoreApi.pets.updatePet({ id, name })
+await updatePetAdapter({ id, name })
 await mutate(getPetKey(id))
 ```
 
@@ -287,9 +267,10 @@ closure.
 
 ## Проверка
 
-- Fetcher выполняет только GET-operation API client.
+- Fetcher выполняет GET domain adapter или GET-operation API client для данных без доменного владельца.
 - Key содержит namespace и все влияющие на результат аргументы.
 - Remote data не копируются в другой client store.
-- Mutation выполняется API client и синхронизирует связанные GET keys.
-- Доменный cache не содержит DTO и source errors.
+- Domain mutation выполняется adapter; недоменная mutation выполняется API client.
+- Mutation синхронизирует связанные GET keys.
+- Доменный cache не содержит DTO и source errors; hook отделяет typed domain error от unknown defect.
 - `dedupingInterval` не описан как TTL: он только подавляет повторные запросы внутри интервала.

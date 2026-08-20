@@ -13,10 +13,10 @@ SWR не заменяет HTTP или socket transport. REST-запросы вы
 
 | Задача | Решение | Референс |
 | --- | --- | --- |
-| Получить REST server state для render | `useSWR` + GET-operation API client | [`get-data.md`](get-data.md) |
+| Получить REST server state для render | `useSWR` + domain adapter или GET-operation API client | [`get-data.md`](get-data.md) |
 | Подготовить GET-data первого render | `preload` + `SWRConfig.cacheData` | [`ssr.md`](ssr.md) |
 | Получать входящие realtime updates | `useSWRSubscription` | [`subscriptions.md`](subscriptions.md) |
-| Выполнить `POST`, `PUT`, `PATCH`, `DELETE` | API client напрямую | [`get-data.md`](get-data.md#только-get) |
+| Выполнить `POST`, `PUT`, `PATCH`, `DELETE` | Domain adapter или API client для недоменных данных | [`get-data.md`](get-data.md#только-get) |
 | Отправить socket command | Socket client напрямую | [`subscriptions.md`](subscriptions.md#socket-transport) |
 
 ## Преимущества
@@ -27,7 +27,7 @@ SWR не заменяет HTTP или socket transport. REST-запросы вы
 - единые request states для всех consumers;
 - focus, reconnect и manual revalidation;
 - conditional fetching без нарушения Rules of Hooks;
-- типизированный fetcher через готовую API operation.
+- типизированный fetcher через domain adapter или готовую API operation.
 
 ### SSR
 
@@ -51,7 +51,8 @@ SSR используется только для данных первого ren
 
 - Remote fetcher `useSWR` выполняет только HTTP `GET`.
 - Не используй `useSWRMutation` для REST mutations.
-- Изменяющие REST operations выполняй API client и затем синхронизируй GET-cache.
+- Изменяющие domain operations выполняй adapter; недоменные operations выполняй API client; затем синхронизируй
+  GET-cache.
 - Outbound socket commands выполняй socket client, а не subscription hook.
 - Не копируй SWR data в React state, Context или Zustand.
 - Не помещай auth, URL и transport policy внутрь hooks.
@@ -62,40 +63,21 @@ SSR используется только для данных первого ren
 
 ```text
 examples/
-├── pet-domain/
-│   ├── errors/
-│   │   ├── index.ts
-│   │   ├── pet-domain.error.ts
-│   │   └── pet-error-code.ts
-│   ├── hooks/
-│   │   └── use-get-pet/
-│   ├── mappers/
-│   ├── services/
-│   │   └── get-pet/
-│   └── types/
 ├── hooks/
 │   ├── use-get-pet/
 │   └── use-get-auth-pet/
-├── shared/
-│   └── errors/
-│       ├── domain.error.ts
-│       └── index.ts
 └── subscriptions/
     └── use-order-subscription/
 ```
 
 - [`use-get-pet/`](examples/hooks/use-get-pet/) — простой GET-hook с типами API operation.
 - [`use-get-auth-pet/`](examples/hooks/use-get-auth-pet/) — GET-hook со стабильным auth scope в cache key.
-- [`pet-domain/hooks/use-get-pet/`](examples/pet-domain/hooks/use-get-pet/) — доменный GET-hook с простым fetcher.
-- [`get-pet/`](examples/pet-domain/services/get-pet/) — доменный service, выполняющий API request и применяющий внутренние
-  mappers домена.
-- [`shared/errors/`](examples/shared/errors/) — общий runtime-маркер и guard доменных ошибок.
 - [`use-order-subscription/`](examples/subscriptions/use-order-subscription/) — typed subscription key, callback и
   cleanup.
+- [`React pet domain`](../../frameworks/react/examples/domains/pet/README.md) — SWR hook использует domain adapter,
+  передаёт typed domain error и направляет unknown defect в Error Boundary.
 
 Имена API clients, transports, operations и доменных моделей в examples условны. Используй фактические public API и
 TypeScript-сигнатуры проекта.
-
-`pet-domain/` представляет один пример доменного модуля, а не слой `domains` приложения.
 
 Для API SWR, не описанного этими референсами, используй официальную [документацию SWR](https://swr.vercel.app/).

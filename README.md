@@ -8,9 +8,9 @@
 
 - `code-style.md` — обязательные общие правила без дополнительной группировки.
 - `languages/` — JavaScript, TypeScript, JSX/TSX, HTML и CSS.
-- `technologies/` — REST API и SVG sprites независимо от framework.
+- `technologies/` — REST API, SWR и SVG sprites независимо от framework.
 - `frameworks/` — React.
-- `architecture/` — физическое оформление уже принятых архитектурных решений.
+- `architecture/` — проектирование владельцев и границ по SLM Design, затем их физическое оформление.
 - `tooling/` — подготовка центральных variables, media и nesting для стилей.
 
 ## Структура
@@ -21,8 +21,15 @@ src/
 └── references/
     ├── code-style.md
     ├── architecture/
+    │   ├── README.md
     │   ├── slm-design.md
-    │   └── slm-structure.md
+    │   ├── slm-structure.md
+    │   ├── failure-handling.md
+    │   └── domains/
+    │       ├── README.md
+    │       ├── contracts.md
+    │       ├── adapters.md
+    │       └── errors.md
     ├── technologies/
     │   ├── README.md
     │   ├── rest-api/
@@ -31,6 +38,12 @@ src/
     │   │   ├── transport.md
     │   │   ├── api-client.md
     │   │   └── usage.md
+    │   ├── swr/
+    │   │   ├── README.md
+    │   │   ├── get-data.md
+    │   │   ├── ssr.md
+    │   │   ├── subscriptions.md
+    │   │   └── examples/
     │   └── svg-sprites/
     │       ├── README.md
     │       ├── setup.md
@@ -41,15 +54,13 @@ src/
     │       ├── components.md
     │       ├── styling.md
     │       ├── state-management.md
-    │       ├── rest/
-    │       │   ├── README.md
-    │       │   └── swr.md
+    │       ├── rest.md
     │       ├── realtime.md
     │       ├── icons.md
     │       └── examples/
     │           ├── components/
-    │           ├── stores/
-    │           └── subscriptions/
+    │           ├── domains/
+    │           └── stores/
     ├── tooling/
     │   └── style-environment.md
     └── languages/
