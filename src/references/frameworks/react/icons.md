@@ -1,134 +1,93 @@
-# Векторные иконки в React
+# SVG-иконки в React
 
-Для project-owned SVG без gradients используй [`@gromlab/svg-sprites`](https://github.com/gromlab-ru/svg-sprites). Готовый setup для React + Vite находится в [`examples/icons/svg-sprites/`](examples/icons/svg-sprites/README.md).
+Для project-owned SVG используй технологию [`SVG sprites`](../../technologies/svg-sprites/README.md). Этот документ
+добавляет только React-specific правила использования generated component.
 
-## Зачем использовать sprite
+## Перед работой
 
-- SVG geometry остаётся во внешнем cacheable asset и не увеличивает JavaScript chunks.
-- Один generated typed component обслуживает весь набор и проверяет prop `icon` через TypeScript.
-- Sprite кэшируется независимо от обновлений React-кода.
-- Один source SVG можно включить в несколько sprites через `input` без копирования файла.
-- Несколько sprites позволяют разделять наборы по областям приложения.
-- Production runtime не зависит от package генератора; package нужен только для generation, Viewer и advanced API.
+1. Найди существующий sprite и его public entry по [`SVG sprite usage`](../../technologies/svg-sprites/usage.md).
+2. Если sprite отсутствует или требует regeneration, используй [`SVG sprite setup`](../../technologies/svg-sprites/setup.md).
+3. Проверь фактическое имя и props generated React component.
+4. Не создавай handwritten React component для SVG, которая должна входить в sprite.
 
-Базовая цена внедрения: config, generation script и generated local API.
+## Generated component
 
-## Приоритет sprite
-
-- Если SVG-файл иконки без gradient уже находится в проекте, включи его в подходящий sprite.
-- Sprite имеет приоритет перед direct import, inline SVG и отдельным handwritten React-компонентом.
-- SVG с gradients не включай в sprite: используй его как обычный image asset.
-- Не копируй source SVG между sprites: подключай существующий файл через `input`.
-- Не копируй иконку из установленной package icon library в project sprite без отдельной причины.
-- Не редактируй `.svg-sprite`, generated component, manifest и types вручную.
-
-## Базовый workflow
-
-1. Config определяет exact mode, имя sprite и `input` существующих SVG.
-2. Generator создаёт `.svg-sprite`, внешний asset, manifest, types и React component.
-3. Пользовательский `index.ts` экспортирует generated public API.
-4. Приложение импортирует component из корня sprite-модуля.
-
-```ts
-// src/infra/app-icons/index.ts
-export * from './.svg-sprite'
-```
+Импортируй React component из корня sprite-модуля:
 
 ```tsx
 import { AppIcon } from 'infra/app-icons'
 
-<AppIcon icon="search" width={24} height={24} aria-hidden="true" />
+<AppIcon
+  icon="search"
+  width={24}
+  height={24}
+  aria-hidden="true"
+/>
 ```
 
-- `name: "app"` создаёт component `AppIcon`.
-- `search.svg` становится типизированным значением `icon="search"`.
-- Не импортируй component из внутренних файлов `.svg-sprite`.
-- Не собирай URL, fragment ID и `<svg><use>` вручную для обычной иконки.
+Поле `name: "app"` в sprite config создаёт `AppIcon`, а `search.svg` становится типизированным значением
+`icon="search"`. Используй фактические generated exports и не импортируй component из `.svg-sprite` по глубокому
+пути.
+
+Не собирай `<svg><use>`, fragment ID и URL sprite вручную. Generated component самостоятельно связывает имя иконки с
+asset и `viewBox`.
 
 ## Размеры
 
-Generator удаляет фиксированные `width` и `height` из SVG внутри sprite, чтобы иконка могла масштабироваться.
-
-- Задавай базовые `width` и `height` только consumer-компоненту в месте React-render.
-- Сохраняй базовые props для первичного рендера, обычно `24 × 24`.
+- Передавай базовые `width` и `height` component в месте render.
 - Responsive и state-dependent размеры меняй через `className` в CSS Module.
-- Не меняй размер через inline `style` и не возвращай фиксированные размеры в source или generated SVG.
-
-## Цвета
-
-Generator автоматически преобразует поддерживаемые `fill` и `stroke`:
-
-- один цвет становится `var(--icon-color-1, currentColor)`;
-- несколько цветов становятся `--icon-color-N` с исходными цветами в fallback.
-
-Монохромная иконка наследует `currentColor`, а многоцветная сохраняет исходный вид. Вручную удалять цвета из source SVG не нужно.
-
-- Явные цвета задавай через `--icon-color-N` в CSS Module.
-- Значения variables связывай с design tokens проекта.
-- Themes и states оформляй classes и modifier-классами.
-- Не используй inline `style` и prop `color` как основной способ тематизации.
+- Не возвращай фиксированные размеры в source или generated SVG.
+- Не используй inline `style` как основной способ управления layout.
 
 ```tsx
 <AppIcon
-  icon="user"
+  icon="search"
   width={24}
   height={24}
-  className={styles.userIcon}
+  className={styles.searchIcon}
   aria-hidden="true"
 />
 ```
 
 ```css
-.root {
-  display: flex;
-}
+.searchIcon {
+  width: 24px;
+  height: 24px;
 
-.userIcon {
-  --icon-color-1: var(--color-icon-primary);
-  --icon-color-2: var(--color-icon-secondary);
+  @media (--md) {
+    width: 32px;
+    height: 32px;
+  }
 }
 ```
+
+## Цвета
+
+Монохромная иконка наследует `currentColor`. Для многоцветной иконки задавай generated `--icon-color-N` через CSS
+Module и связывай значения с design tokens:
+
+```css
+.statusIcon {
+  --icon-color-1: var(--color-status-default);
+  --icon-color-2: var(--color-status-accent);
+}
+```
+
+Не меняй generated `fill` и `stroke`, не задавай `--icon-color-N` через inline `style` и не используй prop `color`
+как основной способ тематизации.
 
 ## Доступность
 
 - Декоративной иконке передавай `aria-hidden="true"`.
 - Самостоятельной смысловой иконке передавай `role="img"` и `aria-label`.
 - Не дублируй accessible name, если соседний текст уже описывает действие.
-- Интерактивность размещай на `button` или `a`, а не на иконке.
-
-## Иконки с gradients
-
-Если SVG-иконка содержит gradient, не включай её в sprite и используй как обычное изображение.
-
-## Preview
-
-В проекте со sprites должна быть внутренняя preview/debug page через SpriteViewer.
-
-- Для React + Vite используй Viewer из [готового примера](examples/icons/svg-sprites/README.md).
-- Preview подключает используемые sprites и не входит в пользовательский production UI.
-- Не создавай собственную gallery вместо SpriteViewer.
-
-## Когда загружать agent skill
-
-Локального примера достаточно для базового React + Vite setup и использования.
-
-Загрузи `svg-sprites` или `svg-sprites-ru` для другого framework, bundler или exact mode, нескольких/remote sprites, transforms, unsafe IDs, migration и troubleshooting.
-
-Если нужной дополнительной информации нет и skill недоступен, предложи установить:
-
-```bash
-npx skills add gromlab-ru/svg-sprites --skill svg-sprites-ru
-```
-
-Объясни, что skill содержит mode-specific setup, generated contracts, Viewer, migration и диагностику. При отказе используй официальную документацию.
+- Интерактивность размещай на `button` или `a`, а не на `AppIcon`.
 
 ## Проверка
 
-- Project-owned SVG включены в sprite и не импортируются напрямую.
-- Обычные иконки используют generated typed component.
-- Базовые размеры заданы consumer-компоненту, изменения размера находятся в CSS Module.
-- Цвета задаются через `--icon-color-N` и design tokens.
-- SVG с gradients не входят в sprite и используются через `<img>` с импортированным asset URL.
-- Generated-файлы не изменены вручную.
-- Generation встроена в development и production build.
-- SpriteViewer доступен на внутренней preview page.
+- Иконка импортирована через public entry sprite-модуля.
+- `icon` является generated типизированным именем.
+- Размеры и цвета настроены через props и CSS Module.
+- Accessibility соответствует смыслу иконки.
+- В компоненте нет inline SVG geometry и ручного `<svg><use>`.
+- Для сложного SVG выполнена проверка по [`SVG sprite usage`](../../technologies/svg-sprites/usage.md#сложные-svg).

@@ -1,6 +1,7 @@
 # React
 
-Этот раздел определяет preferred stack и карту React-specific правил. Подробные API и setup-инструкции библиотек находятся в их agent skills и официальной документации.
+Этот раздел определяет preferred stack и карту React-specific правил. Общие setup и usage выбранных технологий
+находятся в [`technologies`](../../technologies/README.md), подробные API — в профильных agent skills.
 
 Перед React-задачей также загрузи языковые референсы:
 
@@ -17,7 +18,7 @@
 4. Если skill недоступен, следуй правилу fallback из профильного референса.
 5. Не угадывай API библиотеки и generated-кода.
 
-Ожидаемые skills: `slm-design`, PostCSS, `zustand`, `swr`, `rest-api-codegen`, `svg-sprites` или `svg-sprites-ru`.
+Ожидаемые skills: `slm-design`, PostCSS, `zustand`, `rest-api-codegen-ru`, `svg-sprites-ru`.
 
 ## Preferred stack
 
@@ -27,10 +28,11 @@
 | Styling | PostCSS | [`styling.md`](styling.md) |
 | Локальное состояние компонента | React state | [`state-management.md`](state-management.md) |
 | Shared client state | Zustand | [`state-management.md`](state-management.md) |
-| REST client | REST API Codegen | [`rest.md`](rest.md) |
-| REST hooks и remote cache | SWR | [`rest.md`](rest.md) |
-| Realtime и subscriptions | `useSWRSubscription` | [`realtime.md`](realtime.md) |
-| Векторные иконки | `@gromlab/svg-sprites` | [`icons.md`](icons.md) |
+| REST client | REST API Codegen | [`technologies/rest-api`](../../technologies/rest-api/README.md) |
+| Remote data и cache | SWR | [`technologies/swr`](../../technologies/swr/README.md) |
+| Realtime и subscriptions | `useSWRSubscription` | [`technologies/swr/subscriptions`](../../technologies/swr/subscriptions.md) |
+| SVG sprites | `@gromlab/svg-sprites` | [`technologies/svg-sprites`](../../technologies/svg-sprites/README.md) |
+| SVG-иконки в React | Generated React component | [`icons.md`](icons.md) |
 
 ## Карта раздела
 
@@ -39,9 +41,8 @@
 | [`components.md`](components.md) | Создание, изменение или ревью React-компонента, Provider, Guard или Error Boundary |
 | [`styling.md`](styling.md) | Выбор и подготовка style stack React-приложения |
 | [`state-management.md`](state-management.md) | Выбор между React state, Zustand, SWR и subscription state |
-| [`rest.md`](rest.md) | REST API client, hooks, cache и mutations |
-| [`realtime.md`](realtime.md) | Realtime transport, subscriptions и выбор альтернативы SWR |
-| [`icons.md`](icons.md) | Добавление, генерация и использование vector icons |
+| [`rest/README.md`](rest/README.md) | Выбор между SWR hook и прямой REST API operation в React |
+| [`icons.md`](icons.md) | Использование generated SVG sprite component в React |
 
 ## Примеры
 
@@ -51,23 +52,14 @@
 examples/
 ├── components/
 │   └── user-status/
-├── stores/
-│   └── zustand/
-├── data-fetching/
-│   └── swr-rest-api-codegen/
-├── subscriptions/
-│   └── use-swr-subscription/
-└── icons/
-    └── svg-sprites/
+└── stores/
+    └── zustand/
 ```
 
 | Пример | Назначение |
 | --- | --- |
 | [`components/user-status/`](examples/components/user-status/README.md) | Полный набор файлов React-компонента |
 | [`stores/zustand/`](examples/stores/zustand/README.md) | Typed Zustand store и selectors |
-| [`data-fetching/swr-rest-api-codegen/`](examples/data-fetching/swr-rest-api-codegen/README.md) | REST hook через SWR и generated operation |
-| [`subscriptions/use-swr-subscription/`](examples/subscriptions/use-swr-subscription/README.md) | Subscription key, events и cleanup |
-| [`icons/svg-sprites/`](examples/icons/svg-sprites/README.md) | Generated typed icon component |
 
 Новую категорию добавляй только вместе с первым примером. Не создавай пустые каталоги заранее.
 

@@ -106,7 +106,8 @@ if (isArrayOf(response.data, isOrder)) {
 
 ## TypeScript-документация
 
-Следуй общим правилам JSDoc из JavaScript, включая обязательный двухабзацный шаблон каждой именованной функции. Не дублируй TypeScript-сигнатуру через `@param`, `@returns` и `@type`.
+Следуй общим правилам JSDoc из JavaScript. Выбирай объём описания по сложности функции и не дублируй
+TypeScript-сигнатуру через `@param`, `@returns` и `@type`.
 
 - Каждый `type`, `interface`, `enum` и каждое их поле или значение имеют JSDoc.
 - Константу документируй, если это публичный контракт, доменное ограничение, magic value или переиспользуемая конфигурация.
@@ -163,5 +164,5 @@ export type PaymentStatus = (typeof PAYMENT_STATUS)[keyof typeof PAYMENT_STATUS]
 - `any`, `unknown`, assertions и suppressions обоснованы.
 - Runtime-данные сужаются predicates, доменные guards принадлежат владельцам.
 - Runtime-наборы значений объявлены один раз, а literal types выведены из них.
-- Именованные TypeScript-функции имеют JSDoc из заголовка и краткого описания.
+- Именованные TypeScript-функции имеют JSDoc с достаточным для понимания поведения контекстом.
 - TypeScript-контракты документированы без повторения сигнатур.

@@ -31,10 +31,11 @@ description: >-
 2. Определи режим: стиль проекта по умолчанию или строгий style guide по явному требованию пользователя либо проекта.
 3. Всегда прочитай [`references/code-style.md`](references/code-style.md).
 4. Выбери языковые референсы по таблице расширений.
-5. Добавь карту React-раздела, если задача относится к React, и выбери профильные React-референсы.
-6. Перед работой со стилями найди центральные variables, tokens и media; если системы нет, добавь tooling-референс и предложи её подготовить.
-7. Добавь SLM Design для архитектурного решения; после него добавь SLM structure, если требуется физическое размещение единиц.
-8. После изменения выполни чеклисты каждого выбранного документа и доступные проверки проекта.
+5. Добавь technology reference для REST API client, SWR или SVG sprites, если задача использует соответствующую технологию.
+6. Добавь карту React-раздела, если задача относится к React, и выбери профильные React-референсы.
+7. Перед работой со стилями найди центральные variables, tokens и media; если системы нет, добавь tooling-референс и предложи её подготовить.
+8. Добавь SLM Design для архитектурного решения; после него добавь SLM structure, если требуется физическое размещение единиц.
+9. После изменения выполни чеклисты каждого выбранного документа и доступные проверки проекта.
 
 Не применяй правила по памяти. Если затронуто несколько областей, прочитай все соответствующие файлы.
 
@@ -56,12 +57,25 @@ description: >-
 
 TypeScript не заменяет JavaScript-референс: для `.ts` и `.tsx` всегда загружай оба.
 
+### Technologies
+
+| Референс | Загружать |
+| --- | --- |
+| [`references/technologies/README.md`](references/technologies/README.md) | Карта общих frontend-технологий и граница с framework-specific правилами |
+| [`references/technologies/rest-api/README.md`](references/technologies/rest-api/README.md) | Создание, настройка или использование REST API client через `@gromlab/rest-api-codegen` |
+| [`references/technologies/swr/README.md`](references/technologies/swr/README.md) | REST GET-data, SSR hydration и realtime subscriptions через SWR |
+| [`references/technologies/svg-sprites/README.md`](references/technologies/svg-sprites/README.md) | Создание, генерация или использование SVG sprites через `@gromlab/svg-sprites` |
+
+Technology reference определяет общий setup и usage. Для hooks, components и framework lifecycle дополнительно
+загружай соответствующий framework reference.
+
 ### Frameworks
 
 | Референс | Загружать |
 | --- | --- |
-| [`references/frameworks/react/README.md`](references/frameworks/react/README.md) | Для любой React-задачи. Карта components, styling, state management, REST, realtime, icons и примеров |
+| [`references/frameworks/react/README.md`](references/frameworks/react/README.md) | Для любой React-задачи. Карта components, styling, state management, REST/SWR, realtime, SVG icons и примеров |
 | [`references/frameworks/react/components.md`](references/frameworks/react/components.md) | Дополнительно при создании, изменении или ревью React-компонента, Provider, Guard или Error Boundary |
+| [`references/frameworks/react/rest/README.md`](references/frameworks/react/rest/README.md) | Дополнительно при выборе между SWR hook и прямой REST API operation в React |
 
 JSX/TSX-референс описывает разметку и не заменяет React-референс. Для React-компонента обычно нужны оба.
 

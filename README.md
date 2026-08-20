@@ -8,6 +8,7 @@
 
 - `code-style.md` — обязательные общие правила без дополнительной группировки.
 - `languages/` — JavaScript, TypeScript, JSX/TSX, HTML и CSS.
+- `technologies/` — REST API и SVG sprites независимо от framework.
 - `frameworks/` — React.
 - `architecture/` — физическое оформление уже принятых архитектурных решений.
 - `tooling/` — подготовка центральных variables, media и nesting для стилей.
@@ -22,21 +23,33 @@ src/
     ├── architecture/
     │   ├── slm-design.md
     │   └── slm-structure.md
+    ├── technologies/
+    │   ├── README.md
+    │   ├── rest-api/
+    │   │   ├── README.md
+    │   │   ├── generation.md
+    │   │   ├── transport.md
+    │   │   ├── api-client.md
+    │   │   └── usage.md
+    │   └── svg-sprites/
+    │       ├── README.md
+    │       ├── setup.md
+    │       └── usage.md
     ├── frameworks/
     │   └── react/
     │       ├── README.md
     │       ├── components.md
     │       ├── styling.md
     │       ├── state-management.md
-    │       ├── rest.md
+    │       ├── rest/
+    │       │   ├── README.md
+    │       │   └── swr.md
     │       ├── realtime.md
     │       ├── icons.md
     │       └── examples/
     │           ├── components/
     │           ├── stores/
-    │           ├── data-fetching/
-    │           ├── subscriptions/
-    │           └── icons/
+    │           └── subscriptions/
     ├── tooling/
     │   └── style-environment.md
     └── languages/
