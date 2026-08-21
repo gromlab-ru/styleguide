@@ -1,12 +1,12 @@
 # GET data
 
-Используй `useSWR` для REST GET-data, которая представляет server state и участвует в React render. Для данных с
-доменным владельцем fetcher вызывает domain adapter; для недоменных данных — готовую GET-operation API client по
+Используй `useSWR` для REST GET-data, которая представляет server state и участвует в React render. В SLM-проекте для
+данных с доменным владельцем fetcher вызывает public domain operation; для недоменных данных — готовую GET-operation API client по
 технологии [`REST API`](../rest-api/README.md).
 
 ```text
 useSWR
-→ domain adapter или GET-operation API client
+→ public domain operation или GET-operation API client
 → HttpClient
 → REST API
 ```
@@ -18,7 +18,7 @@ useSWR
 - focus, browser reconnect и ручная revalidation обновляют данные без собственного `useEffect`;
 - `null` key отключает запрос до появления обязательных параметров;
 - несколько компонентов используют один remote state без копирования в Context или Zustand;
-- fetcher может вызвать domain adapter, сохранить в cache доменную модель и передать ожидаемую domain error через
+- fetcher может вызвать public domain operation, сохранить в cache доменную модель и передать ожидаемую domain error через
   проверенный error channel.
 
 ## Только GET
@@ -27,15 +27,16 @@ Remote request внутри `useSWR` выполняет только HTTP `GET`.
 
 - Не выполняй через `useSWR` или `useSWRMutation` методы `POST`, `PUT`, `PATCH` и `DELETE`.
 - Не используй `useSWRMutation` как второй способ выполнения REST-запросов.
-- Изменяющие domain operations вызывай через adapter; недоменные operations — напрямую через API client из event
-  handler, action или владельца сценария.
+- Изменяющие operations выполняй вне SWR согласно архитектурному профилю. В SLM-проекте domain operation вызывается
+  через public API домена, а недоменная — напрямую через API client из event handler, action или владельца сценария.
 - После изменения синхронизируй связанные GET keys через `mutate`.
-- Read-operation через `POST` по умолчанию также выполняй вне SWR: через domain adapter либо API client для недоменных
-  данных. Она не становится GET-cache только из-за того, что не изменяет данные.
+- Read-operation через `POST` по умолчанию также выполняй вне SWR по архитектурному профилю. В SLM-проекте используй
+  public domain operation либо API client для данных без доменного владельца. Operation не становится GET-cache только
+  из-за того, что не изменяет данные.
 
-Императивный GET для download, export или другого результата, который не является server state для render, может
-выполняться напрямую через API client. Не помещай binary response и одноразовый side effect в SWR cache без отдельной
-причины.
+Императивный GET для download, export или другого результата, который не является server state для render, выполняй по
+архитектурному профилю. В SLM-проекте используй public domain operation при наличии доменного владельца, иначе — API
+client. Не помещай binary response и одноразовый side effect в SWR cache без отдельной причины.
 
 Такая граница исключает автоматический запуск изменяющего запроса при mount, focus или reconnect, неоднозначный retry и
 смешивание mutation state с cache чтения.
@@ -207,24 +208,24 @@ export const useGetPet = (id: string | null): UseGetPetResponse => {
 Для простого API hook возвращай стандартный `SWRResponse` без ручной пересборки. Domain hook может предоставить
 собственный contract, если должен отделить typed domain error от unknown defect по следующему разделу.
 
-## Domain adapter
+## Domain operation
 
-Если у данных есть доменный владелец, не добавляй DTO mapping и интерпретацию source errors в SWR hook и не обходи
-adapter для отдельного consumer. Передай в fetcher готовый domain adapter:
+В SLM-проекте, если у данных есть доменный владелец, не добавляй DTO mapping и интерпретацию source errors в SWR hook и
+не обходи public API домена для отдельного consumer. Передай в fetcher готовую domain operation:
 
 ```ts
-const fetcher = ([, petId]: GetPetKey) => getPetAdapter(petId)
+const fetcher = ([, petId]: GetPetKey) => getPet(petId)
 ```
 
-Domain adapter связывает внешний источник с моделями и ошибками домена по
-[`adapter policy`](../../architecture/domains/adapters.md). SWR отвечает только за key, cache и React lifecycle.
+Public operation реализуется внутренним adapter по
+[`domain boundary policy`](../../architecture/slm-design/domains/README.md). SWR отвечает только за key, cache и React lifecycle.
 
-Успешный response adapter становится `data`. Разделение typed domain error и unknown defect выполняй по
-[`failure policy`](../../architecture/failure-handling.md), не определяя новую error model внутри SWR hook.
+Успешный domain result становится `data`. Разделение typed domain error и unknown defect выполняй по
+[`failure policy`](../../failure-handling.md), не определяя новую error model внутри SWR hook.
 
 Полный пример находится в
 [`React pet domain`](../../frameworks/react/examples/domains/pet/README.md). Hook принадлежит домену вместе с его
-контрактом и adapter; не размещай его во внешнем общем каталоге hooks.
+контрактом и internal adapter; не размещай его во внешнем общем каталоге hooks.
 
 ## Revalidation после mutation
 
@@ -233,7 +234,7 @@ Domain adapter связывает внешний источник с модел�
 ```ts
 const pet = useGetPet(id)
 
-await updatePetAdapter({ id, name })
+await updatePet({ id, name })
 await pet.refresh()
 ```
 
@@ -245,7 +246,7 @@ Revalidation получает каноническое состояние сер
 ```ts
 const { mutate } = useSWRConfig()
 
-await updatePetAdapter({ id, name })
+await updatePet({ id, name })
 await mutate(getPetKey(id))
 ```
 
@@ -267,10 +268,10 @@ closure.
 
 ## Проверка
 
-- Fetcher выполняет GET domain adapter или GET-operation API client для данных без доменного владельца.
+- В SLM-проекте fetcher выполняет public domain operation или GET-operation API client для данных без доменного владельца.
 - Key содержит namespace и все влияющие на результат аргументы.
 - Remote data не копируются в другой client store.
-- Domain mutation выполняется adapter; недоменная mutation выполняется API client.
+- В SLM-проекте domain mutation выполняется через public API домена; недоменная mutation выполняется API client.
 - Mutation синхронизирует связанные GET keys.
-- Доменный cache не содержит DTO и source errors; hook отделяет typed domain error от unknown defect.
+- В SLM-проекте доменный cache не содержит DTO и source errors; hook отделяет typed domain error от unknown defect.
 - `dedupingInterval` не описан как TTL: он только подавляет повторные запросы внутри интервала.

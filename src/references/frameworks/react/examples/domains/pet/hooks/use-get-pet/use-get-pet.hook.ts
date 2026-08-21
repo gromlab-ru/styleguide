@@ -1,7 +1,7 @@
 import useSWR from 'swr'
 import { toApplicationDefect } from 'src/shared/lib/application-defect'
-import { getPetAdapter } from '../../adapters/get-pet.adapter'
-import { isPetDomainError } from '../../errors'
+import { getPet } from '../../adapters/get-pet.adapter'
+import { isGetPetError } from '../../errors'
 import type { Pet } from '../../types'
 import { getPetKey } from './get-pet-key'
 import type { GetPetKey, UseGetPetResponse } from './types/use-get-pet.type'
@@ -11,13 +11,13 @@ import type { GetPetKey, UseGetPetResponse } from './types/use-get-pet.type'
  */
 export const useGetPet = (id: string | null): UseGetPetResponse => {
   const key = getPetKey(id)
-  const fetcher = ([, petId]: GetPetKey) => getPetAdapter(petId)
+  const fetcher = ([, petId]: GetPetKey) => getPet(petId)
   const query = useSWR<Pet, unknown, GetPetKey | null>(key, fetcher, {
     shouldRetryOnError: false
   })
   const error = query.error
 
-  if (error !== undefined && !isPetDomainError(error)) {
+  if (error !== undefined && !isGetPetError(error)) {
     throw toApplicationDefect('pets.useGetPet', error)
   }
 

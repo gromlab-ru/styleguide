@@ -1,4 +1,4 @@
-import type { PetDomainError } from '../../../errors'
+import type { GetPetError } from '../../../errors'
 import type { Pet } from '../../../types'
 
 /**
@@ -11,7 +11,7 @@ export type GetPetKey = readonly ['pet-domain/pets/get-pet', string]
  */
 export type UseGetPetResponse = Readonly<{
   pet: Pet | undefined
-  error: PetDomainError | undefined
+  error: GetPetError | undefined
   isLoading: boolean
   isValidating: boolean
   refresh: () => Promise<Pet | undefined>

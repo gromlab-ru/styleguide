@@ -12,7 +12,7 @@ Realtime integration разделяет три ответственности:
 | --- | --- |
 | Connection, credentials, reconnect и protocol | Socket manager или SDK |
 | Shared listener lifecycle и latest client projection | `useSWRSubscription` |
-| Место и длительность подключения в React tree | SLM-владелец сценария |
+| Место и длительность подключения в React tree | Владелец по архитектурному профилю проекта |
 
 `useSWRSubscription` выбран для React integration, потому что одинаковый key разделяет subscription между consumers,
 а disposer вызывается после unmount последнего consumer. Это устраняет ручные listeners в каждом component, но не
@@ -26,7 +26,8 @@ Realtime integration разделяет три ответственности:
 | Realtime обновляет восстановимое REST-состояние | Subscription owner синхронизирует SWR GET-cache |
 | Realtime нужен всему module subtree | Именованный owner component или Provider монтирует sync lifecycle |
 | Realtime нужен только пока виден один consumer | Этот consumer монтирует subscription hook |
-| Нужно отправить command | Action или service вызывает socket client напрямую |
+| Нужно отправить domain-owned command в SLM | Action или service вызывает public domain operation |
+| Нужно отправить недоменный technical command | Action или service вызывает socket client напрямую |
 | Нужен ordered event processing, replay или queue | Используется специализированный mechanism вместо latest-value subscription |
 
 ## Самостоятельное latest value
@@ -36,7 +37,7 @@ Realtime integration разделяет три ответственности:
 
 ```text
 socket manager
-→ useSWRSubscription
+→ специализированный useSWRSubscription hook
 → latest data / error
 → React component
 ```
@@ -68,7 +69,7 @@ Subscription owner применяет snapshot, delta или invalidation по �
 
 ## Lifecycle owner
 
-SLM-владелец состояния определяет область жизни realtime integration:
+Владелец состояния по архитектурному профилю определяет область жизни realtime integration:
 
 - один visible consumer монтирует hook, если данные нужны только ему;
 - module-wide sync монтируется именованным owner component или Provider на границе модуля;
@@ -84,6 +85,10 @@ Subscription hook получает готовый transport. Его subscribe ca
 а сам hook возвращает subscription response для React consumer. Создание shared connection, commands, auth, reconnect
 и reconciliation остаются в transport manager или SDK.
 
+В SLM-проекте, если realtime payload имеет доменного владельца, hook находится внутри домена, преобразует source data и
+errors в domain contract и экспортируется через client facet. Внешний React consumer не импортирует socket manager, SDK,
+source event type и transport error напрямую.
+
 При смене user identity session owner сначала отключает private subscription keys, затем меняет transport context и
 активирует keys новой identity. Подробный порядок и требования к stable auth key находятся в
 [`SWR subscriptions`](../../technologies/swr/subscriptions.md#socket-transport).
@@ -92,8 +97,9 @@ Subscription hook получает готовый transport. Его subscribe ca
 
 - Выбран самостоятельный latest snapshot или sync SWR GET-cache.
 - Server не подменён клиентским cache как авторитетный источник данных.
-- Subscription lifecycle имеет явного SLM-владельца.
+- Subscription lifecycle имеет явного владельца по архитектурному профилю.
 - Always-on sync не зависит от случайного screen lifecycle.
 - Hook использует готовый transport и не владеет shared connection.
+- В SLM-проекте domain-owned payload и errors адаптированы до public React contract.
 - Для сложной event semantics выбран профильный mechanism, а не latest-value subscription.
 - Технический контракт проверен по `technologies/swr/subscriptions.md`.

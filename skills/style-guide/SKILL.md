@@ -58,6 +58,12 @@ description: >-
 
 TypeScript не заменяет JavaScript-референс: для `.ts` и `.tsx` всегда загружай оба.
 
+### Общие policies
+
+| Референс | Загружать |
+| --- | --- |
+| [`references/failure-handling.md`](references/failure-handling.md) | Unexpected defects, telemetry, Error Boundary, async handlers и safe fallback |
+
 ### Technologies
 
 | Референс | Загружать |
@@ -96,14 +102,11 @@ JSX/TSX-референс описывает разметку и не замен�
 
 | Референс | Загружать | Не использовать для |
 | --- | --- | --- |
-| [`references/architecture/README.md`](references/architecture/README.md) | Карта архитектурных policies и порядок выбора профильных документов | Подробного API SLM или libraries |
-| [`references/architecture/slm-design.md`](references/architecture/slm-design.md) | Выбор владельца, слоя, module boundary, public API и зависимостей по SLM Design | Языкового code style и API framework-библиотек |
-| [`references/architecture/slm-structure.md`](references/architecture/slm-structure.md) | Когда нужно физически разместить уже спроектированные SLM-компоненты, Providers, Guards, Error Boundaries или вложенные модули | Выбора владельца, слоя, границы модуля или public API |
-| [`references/architecture/domains/README.md`](references/architecture/domains/README.md) | Проектирование или изменение предметного домена | Generic utilities и технических возможностей без предметного владельца |
-| [`references/architecture/domains/contracts.md`](references/architecture/domains/contracts.md) | Создание моделей, queries, commands, результатов, DTO mapping или public API домена | Формы transport DTO и generated API |
-| [`references/architecture/domains/adapters.md`](references/architecture/domains/adapters.md) | Связь внешнего источника с доменными моделями, hooks и другими consumers | Прямого экспорта API client и DTO |
-| [`references/architecture/domains/errors.md`](references/architecture/domains/errors.md) | Ожидаемые неуспешные исходы, typed domain errors, codes и factories | Неожиданных programming и integration defects |
-| [`references/architecture/failure-handling.md`](references/architecture/failure-handling.md) | Unexpected defects, telemetry, Error Boundary и async fallback policy | Ожидаемых предметных исходов сценария |
+| [`references/architecture/README.md`](references/architecture/README.md) | Выбор архитектурного профиля и порядок применения командных policies | Правил конкретной архитектуры |
+| [`references/architecture/slm-design/README.md`](references/architecture/slm-design/README.md) | Карта решений команды для проекта на SLM | Выбора владельца, слоя, module boundary и зависимостей вместо skill `slm-design` |
+| [`references/architecture/slm-design/domains/README.md`](references/architecture/slm-design/domains/README.md) | Обязательная граница product data: consumers используют только public API доменного владельца | Проектирования самого доменного контракта вместо skill `slm-design` |
+| [`references/architecture/slm-design/domains/adapters.md`](references/architecture/slm-design/domains/adapters.md) | Internal adapter, mappers и предметные public operations домена | Технических capabilities без доменного владельца |
+| [`references/architecture/slm-design/domains/errors.md`](references/architecture/slm-design/domains/errors.md) | Ожидаемые неуспешные исходы, typed domain errors, codes и factories | Неожиданных programming и integration defects |
 
 ## Выбор по файлу
 
@@ -120,12 +123,14 @@ JSX/TSX-референс описывает разметку и не замен�
 | REST GET или mutation в React | `frameworks/react/README.md` + `frameworks/react/rest.md` + профильные technology-референсы |
 | Realtime в React | `frameworks/react/README.md` + `frameworks/react/realtime.md` + `technologies/swr/subscriptions.md` |
 | SVG-иконка в React | `frameworks/react/README.md` + `frameworks/react/icons.md` + `technologies/svg-sprites/usage.md` для project-owned иконки |
-| Доменная модель или adapter | `architecture/README.md` + `architecture/slm-design.md` + `architecture/domains/README.md` + `architecture/domains/contracts.md` + `architecture/domains/adapters.md` |
-| Ожидаемые доменные ошибки | Domain-набор + `architecture/domains/errors.md` |
-| Unexpected error или defect | `architecture/failure-handling.md` + референсы framework/technology boundary |
-| Физическая структура SLM | `architecture/slm-structure.md` + референсы изменяемых файлов |
+| Доменная operation или integration с источником в SLM | Skill `slm-design` + `architecture/slm-design/domains/README.md` + `architecture/slm-design/domains/adapters.md` + `architecture/slm-design/domains/errors.md` + `failure-handling.md` |
+| API, SDK, storage или realtime payload с доменным владельцем в SLM | Skill `slm-design` + `architecture/slm-design/domains/README.md` + `architecture/slm-design/domains/adapters.md` + `architecture/slm-design/domains/errors.md` + профильные framework/technology references |
+| Ожидаемые доменные ошибки в SLM | Skill `slm-design` + `architecture/slm-design/domains/README.md` + `architecture/slm-design/domains/errors.md` + `failure-handling.md` |
+| Unexpected error или defect | `failure-handling.md` + референсы framework/technology boundary |
 
 Если изменение React-компонента затрагивает CSS Module, добавь `languages/css.md`.
+Для REST или realtime с доменным владельцем в SLM-проекте дополнительно загружай `architecture/slm-design/domains/README.md`,
+`architecture/slm-design/domains/adapters.md`, `architecture/slm-design/domains/errors.md` и `failure-handling.md`.
 
 ## Поддерживающий материал TypeScript
 

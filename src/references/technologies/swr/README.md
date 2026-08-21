@@ -13,11 +13,11 @@ SWR не заменяет HTTP или socket transport. REST-запросы вы
 
 | Задача | Решение | Референс |
 | --- | --- | --- |
-| Получить REST server state для render | `useSWR` + domain adapter или GET-operation API client | [`get-data.md`](get-data.md) |
+| Получить REST server state для render | `useSWR` + SLM domain operation либо GET-operation API client | [`get-data.md`](get-data.md) |
 | Подготовить GET-data первого render | `preload` + `SWRConfig.cacheData` | [`ssr.md`](ssr.md) |
 | Получать входящие realtime updates | `useSWRSubscription` | [`subscriptions.md`](subscriptions.md) |
-| Выполнить `POST`, `PUT`, `PATCH`, `DELETE` | Domain adapter или API client для недоменных данных | [`get-data.md`](get-data.md#только-get) |
-| Отправить socket command | Socket client напрямую | [`subscriptions.md`](subscriptions.md#socket-transport) |
+| Выполнить `POST`, `PUT`, `PATCH`, `DELETE` | SLM domain operation либо API client по architecture profile | [`get-data.md`](get-data.md#только-get) |
+| Отправить socket command | SLM domain operation либо socket client по architecture profile | [`subscriptions.md`](subscriptions.md#socket-transport) |
 
 ## Преимущества
 
@@ -27,7 +27,7 @@ SWR не заменяет HTTP или socket transport. REST-запросы вы
 - единые request states для всех consumers;
 - focus, reconnect и manual revalidation;
 - conditional fetching без нарушения Rules of Hooks;
-- типизированный fetcher через domain adapter или готовую API operation.
+- типизированный fetcher через SLM domain operation или готовую API operation.
 
 ### SSR
 
@@ -51,9 +51,9 @@ SSR используется только для данных первого ren
 
 - Remote fetcher `useSWR` выполняет только HTTP `GET`.
 - Не используй `useSWRMutation` для REST mutations.
-- Изменяющие domain operations выполняй adapter; недоменные operations выполняй API client; затем синхронизируй
+- В SLM-проекте изменяющие domain operations выполняй через public API домена; недоменные operations выполняй API client; затем синхронизируй
   GET-cache.
-- Outbound socket commands выполняй socket client, а не subscription hook.
+- В SLM-проекте domain-owned socket commands выполняй через public API домена; недоменные commands — через socket client, но не subscription hook.
 - Не копируй SWR data в React state, Context или Zustand.
 - Не помещай auth, URL и transport policy внутрь hooks.
 - Для private data получай стабильный `userId` внутри hook и включай его в key, но не используй JWT или cookie.
@@ -74,7 +74,7 @@ examples/
 - [`use-get-auth-pet/`](examples/hooks/use-get-auth-pet/) — GET-hook со стабильным auth scope в cache key.
 - [`use-order-subscription/`](examples/subscriptions/use-order-subscription/) — typed subscription key, callback и
   cleanup.
-- [`React pet domain`](../../frameworks/react/examples/domains/pet/README.md) — SWR hook использует domain adapter,
+- [`React pet domain`](../../frameworks/react/examples/domains/pet/README.md) — SWR hook использует public domain operation,
   передаёт typed domain error и направляет unknown defect в Error Boundary.
 
 Имена API clients, transports, operations и доменных моделей в examples условны. Используй фактические public API и

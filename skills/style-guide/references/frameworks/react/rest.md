@@ -8,28 +8,32 @@
 
 React не настраивает transport и не выполняет самостоятельные `fetch`-запросы.
 
+В SLM-проекте способы с public domain operation применяются только к данным с доменным владельцем. Для проекта с другой
+архитектурой границу между application и API client определяет соответствующий архитектурный профиль.
+
 Разделение сохраняет две независимые ответственности:
 
 - API client владеет типизированным wire contract и общей transport policy;
 - SWR владеет React lifecycle чтения, cache identity, request state и revalidation.
 
-Благодаря этому один API client используется из React hooks, event handlers, SSR и другого runtime-кода, а React
+Благодаря этому один API client используется внутренними domain integrations и недоменным runtime-кодом, а React
 integration не дублирует URL, auth, headers и error policy.
 
 ## Выбор способа
 
 | Сценарий | Использование в React |
 | --- | --- |
-| REST GET предоставляет данные домена для render | Специализированный SWR hook вызывает domain adapter |
+| REST GET предоставляет данные домена для render | Специализированный SWR hook вызывает [public domain operation](../../architecture/slm-design/domains/README.md) |
 | REST GET предоставляет недоменные remote data для render | Специализированный SWR hook вызывает API client по [`get-data.md`](../../technologies/swr/get-data.md) |
-| REST GET выполняет download, export или другой императивный эффект | Операция готового API client |
-| Mutation изменяет данные домена | Action вызывает domain adapter и затем синхронизирует SWR cache |
+| REST GET выполняет domain-owned download, export или другой императивный эффект | Public domain operation |
+| REST GET выполняет недоменный императивный эффект | Операция готового API client |
+| Mutation изменяет данные домена | Action вызывает public domain operation и затем синхронизирует SWR cache |
 | Mutation не относится к доменной ответственности | Операция готового API client с последующей синхронизацией cache при необходимости |
 
 ```text
 GET domain state для render
 → SWR hook
-→ domain adapter
+→ public domain operation
 → API client
 → HttpClient
 
@@ -38,12 +42,17 @@ GET non-domain server state для render
 → API client
 → HttpClient
 
-GET для download / export
+Domain GET для download / export
+→ public domain operation
+→ API client
+→ HttpClient
+
+Non-domain GET для download / export
 → API client
 → HttpClient
 
 Domain POST / PUT / PATCH / DELETE
-→ domain adapter
+→ public domain operation
 → API client
 → HttpClient
 ```
@@ -63,16 +72,16 @@ const { pet, error, isLoading } = useGetPet(id)
 
 ## Изменяющие запросы
 
-Изменяющую domain operation вызывай через adapter из event handler, action или другого владельца сценария:
+Изменяющую domain operation вызывай через public facet из event handler, action или другого владельца сценария:
 
 ```ts
-await updatePetAdapter({
+await updatePet({
   id: '42',
   name: 'Charlie'
 })
 ```
 
-Фактические имена и аргументы бери из публичного domain contract. Adapter внутри вызывает API client и преобразует
+Фактические имена и аргументы бери из публичного domain contract. Internal adapter вызывает API client и преобразует
 source response и errors. После изменяющего запроса обновляй связанный GET-cache по правилам
 [`get-data.md`](../../technologies/swr/get-data.md#revalidation-после-mutation).
 
@@ -81,7 +90,7 @@ source response и errors. После изменяющего запроса об
 - Не выполняй GET server state для render напрямую из component, event handler или `useEffect`.
 - Не помещай download и export в общий remote cache, если результат не является server state для render.
 - Не создавай `fetch` wrapper рядом с готовым API client.
-- Не вызывай API client напрямую для данных с доменным владельцем: используй public domain adapter.
+- В SLM-проекте не вызывай API client напрямую для данных с доменным владельцем: используй public domain operation.
 - Не помещай base URL, auth, headers и error policy в React hooks.
 - Не копируй SWR data в React state, Context или Zustand.
 - Не оформляй изменяющие запросы как обычный `useSWR` GET-hook.
@@ -91,7 +100,7 @@ source response и errors. После изменяющего запроса об
 
 - GET server state для render получен через специализированный SWR hook.
 - Императивный GET не помещён в cache без необходимости.
-- Domain mutation выполнена adapter; недоменная mutation выполнена API client.
+- Domain mutation выполнена через public API домена; недоменная mutation выполнена API client.
 - Mutation синхронизировала связанные GET keys.
 - Hook не содержит transport policy и самостоятельный `fetch`.
 - Remote state не скопирован в другой client store.

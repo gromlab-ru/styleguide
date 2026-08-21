@@ -48,14 +48,14 @@ Server Component
 актуальным официальным RSC-путём, но перед внедрением проверь фактическую версию SWR: API появился в 2.5 и остаётся
 экспериментальным.
 
-Server Component импортирует server-safe key generator и named domain adapter. Server API client используй напрямую
-только для данных без доменного владельца:
+В SLM-проекте Server Component импортирует server-safe key generator и public domain operation. Server API client
+используй напрямую только для данных без доменного владельца:
 
 ```tsx
 import { preload, SWRConfig } from 'swr'
 
-import { getCurrentUserAdapter } from 'domains/auth'
-import { getPetAdapter } from 'domains/pet'
+import { getCurrentUser } from 'domains/auth'
+import { getPet } from 'domains/pet'
 import { getCurrentUserKey } from 'path/to/use-get-current-user/get-current-user-key'
 import { getPetKey } from 'path/to/use-get-pet/get-pet-key'
 
@@ -68,8 +68,8 @@ export const PetPage = async ({ petId }: PetPageProps) => {
   }
 
   const cacheData = {
-    ...preload(petKey, () => getPetAdapter(petId)),
-    ...preload(currentUserKey, () => getCurrentUserAdapter())
+    ...preload(petKey, () => getPet(petId)),
+    ...preload(currentUserKey, () => getCurrentUser())
   }
 
   return (
@@ -86,8 +86,8 @@ export const PetPage = async ({ petId }: PetPageProps) => {
 Client Component вызывает обычный hook с тем же key generator. SWR использует server-loaded result для initial render,
 записывает его в client cache и использует client fetcher для последующих revalidations.
 
-Имена adapters и компонентов условны. Adapter должен быть server-safe и использовать подходящий transport. Если
-интеграция зависит от request context, импортируй capability из server facet домена. Не импортируй browser adapter или
+Имена operations и компонентов условны. Operation должна быть server-safe и использовать подходящий transport. Если
+интеграция зависит от request context, импортируй capability из server facet домена. Не импортируй browser operation или
 client hook в server module graph. Для данных без доменного владельца настрой server API client по runtime-правилам
 технологии [`REST API`](../rest-api/README.md).
 

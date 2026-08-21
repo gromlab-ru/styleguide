@@ -20,14 +20,14 @@ framework-механизм и технологию реализации.
 
 ```text
 Ответственность и ожидаемый результат
-→ владелец и публичная граница по SLM Design
+→ владелец и публичная граница по выбранной архитектуре
 → источник истины состояния
 → React lifecycle и способ потребления
 → конкретная технология
 ```
 
 1. Сформулируй результат или поведение без названий компонентов, hooks и библиотек.
-2. По SLM Design определи единственного владельца, слой, публичный API и область жизни ресурсов.
+2. По архитектурному профилю проекта определи владельца, публичный API и область жизни ресурсов.
 3. Классифицируй состояние как local UI, shared client, REST server state или realtime state.
 4. Выбери React state, Zustand или SWR по смыслу состояния, а не по удобству доступа.
 5. Подключи готовый transport или generated API через профильный React integration.
@@ -40,7 +40,7 @@ Component, hook, Provider, Zustand store и SWR hook являются механ
 
 | Решение | Почему используем | Что получаем | За что не отвечает |
 | --- | --- | --- | --- |
-| [SLM Design](../../architecture/slm-design.md) | Архитектура должна строиться вокруг ответственности, а не вокруг папок и framework-ролей | Единственного владельца, закрытую реализацию, предсказуемый радиус изменений и проверяемый граф зависимостей | React API и выбор библиотек |
+| [SLM Design](https://gromlab-ru.github.io/slm-design/) | Архитектура должна строиться вокруг ответственности, а не вокруг папок и framework-ролей | Единственного владельца, закрытую реализацию, предсказуемый радиус изменений и проверяемый граф зависимостей | React API и выбор библиотек |
 | [REST API Codegen](../../technologies/rest-api/README.md) | HTTP-контракт не должен вручную повторяться в components и hooks | Типизированные operations, единый API client и централизованную transport policy | React lifecycle и remote cache |
 | [SWR для GET](../../technologies/swr/get-data.md) | Server state для render не должен вручную загружаться через `useEffect` и копироваться в client store | Общий cache, дедупликацию, единые request states и revalidation | Изменяющие REST-запросы и HTTP transport |
 | [`useSWRSubscription`](../../technologies/swr/subscriptions.md) | React consumer обычно нужен последний актуальный realtime snapshot или сигнал для обновления GET-cache | Shared subscription по key, cleanup после последнего consumer и синхронизацию server state | Socket connection, commands, queue и event log |
@@ -79,28 +79,28 @@ SWR связывает server data с React lifecycle, Zustand хранит clie
 ```text
 React component
 → специализированный SWR hook владельца
-→ domain adapter или generated API client
+→ public domain operation или generated API client
 → HttpClient
 → REST API
 ```
 
 SWR управляет cache и request lifecycle. API client сохраняет типизированный wire contract и использует общий
-transport. Если у данных есть доменный владелец, source DTO и errors всегда адаптирует domain adapter до записи в cache,
-независимо от конкретного consumer.
+transport. В SLM-проекте при наличии доменного владельца source DTO и errors всегда адаптирует домен до записи в cache,
+независимо от конкретного consumer. В другой архитектуре границу определяет её профиль.
 
 ### Изменение server state
 
 ```text
 Event handler или action владельца
-→ domain adapter или generated API client для данных без доменного владельца
+→ public domain operation или generated API client для данных без доменного владельца
 → HttpClient
 → REST API
 → revalidation или адресное обновление SWR GET-cache
 ```
 
 Изменяющий запрос не становится GET-cache operation. Его lifecycle принадлежит сценарию, который инициировал
-изменение, а SWR после успеха синхронизирует связанные чтения. Если данные принадлежат домену, action вызывает domain
-adapter и не обходит его прямым generated API request.
+изменение, а SWR после успеха синхронизирует связанные чтения. В SLM-проекте для доменных данных action вызывает domain
+operation через public facet и не обходит домен прямым generated API request.
 
 ### Realtime
 
@@ -176,7 +176,7 @@ examples/
 | Пример | Назначение |
 | --- | --- |
 | [`components/user-status/`](examples/components/user-status/README.md) | Полный набор файлов визуального React-компонента |
-| [`domains/pet/`](examples/domains/pet/README.md) | Domain adapter, typed errors, DTO mapping, SWR hook и defect boundary |
+| [`domains/pet/`](examples/domains/pet/README.md) | Public domain operation, internal adapter, typed errors, DTO mapping и SWR hook |
 | [`stores/zustand/`](examples/stores/zustand/README.md) | Typed Zustand store и выбор минимального slice |
 
 Новую категорию добавляй только вместе с первым примером. Не создавай пустые каталоги заранее.

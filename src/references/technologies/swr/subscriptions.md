@@ -187,8 +187,9 @@ Subscription hook:
 transport и активируй keys нового `userId`. JWT refresh не должен менять subscription keys, если identity пользователя и
 представление данных остались прежними.
 
-Outbound socket commands выполняй через socket client/service напрямую. `useSWRSubscription` предназначен для
-входящих updates, а не для отправки commands.
+В SLM-проекте domain-owned outbound command выполняй через public operation домена. Socket client/service напрямую
+используй только для command без доменного владельца. `useSWRSubscription` предназначен для входящих updates, а не для
+отправки commands.
 
 ## Reconnect reconciliation
 
@@ -220,6 +221,11 @@ enum values, числовые диапазоны и revision. Невалидно
 Transport error передавай через `next(error)` либо отдельный connection-state hook. Не ограничивай обработку
 `console.error`, если UI должен показывать disconnected/reconnecting state.
 
+Если payload и errors принадлежат доменному сценарию в SLM-проекте, subscription hook находится внутри домена: он
+преобразует source payload в domain model, известные source errors — в operation-specific domain errors, а unknown
+failure — в `ApplicationDefect`. Внешний consumer получает hook только через client facet домена и не импортирует socket
+client или source event types.
+
 ## Когда SWR не подходит
 
 Выбери специализированный transport/state mechanism, если нужны:
@@ -242,4 +248,5 @@ Transport error передавай через `next(error)` либо отдел�
 - Delta применяется functional updater, а не stale render data.
 - Reconnect завершается reconciliation с каноническим state.
 - Payload валидируется до изменения domain cache.
+- Domain-owned payload и errors не пересекают public boundary в source form.
 - Always-on sync имеет явного владельца lifecycle.

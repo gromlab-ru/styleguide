@@ -14,7 +14,7 @@ const TEMPORARY_SOURCE_STATUSES = new Set([502, 503, 504])
  *
  * Не передаёт DTO и ошибки внешнего API за границу домена.
  */
-export const getPetAdapter = async (petId: string): Promise<Pet> => {
+export const getPet = async (petId: string): Promise<Pet> => {
   try {
     const petDto = await petStoreApi.pets.getPet(petId)
 
@@ -32,6 +32,6 @@ export const getPetAdapter = async (petId: string): Promise<Pet> => {
       throw createPetTemporarilyUnavailableError()
     }
 
-    throw toApplicationDefect('pets.getPetAdapter', error)
+    throw toApplicationDefect('pets.getPet', error)
   }
 }

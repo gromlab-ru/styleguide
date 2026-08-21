@@ -20,16 +20,15 @@ src/
 ├── SKILL.md
 └── references/
     ├── code-style.md
+    ├── failure-handling.md
     ├── architecture/
     │   ├── README.md
-    │   ├── slm-design.md
-    │   ├── slm-structure.md
-    │   ├── failure-handling.md
-    │   └── domains/
+    │   └── slm-design/
     │       ├── README.md
-    │       ├── contracts.md
-    │       ├── adapters.md
-    │       └── errors.md
+    │       └── domains/
+    │           ├── README.md
+    │           ├── adapters.md
+    │           └── errors.md
     ├── technologies/
     │   ├── README.md
     │   ├── rest-api/

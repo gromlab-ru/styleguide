@@ -1,15 +1,14 @@
 # Pet domain в React
 
-Пример показывает домен, который связывает внешний REST API с собственной моделью через `getPetAdapter` и предоставляет
-React integration через SWR hook. Hook и внешние consumers используют один adapter и не вызывают API client напрямую.
+Пример показывает домен, который связывает внешний REST API с собственной моделью через внутренний adapter и
+предоставляет предметную operation `getPet`. Hook и внешние consumers не вызывают API client напрямую.
 
 Пример объединяет несколько references:
 
-- [`architecture/domains`](../../../../../architecture/domains/README.md) определяет владельца и source boundary;
-- [`architecture/domains/contracts.md`](../../../../../architecture/domains/contracts.md) определяет независимость от DTO;
-- [`architecture/domains/adapters.md`](../../../../../architecture/domains/adapters.md) определяет domain adapters;
-- [`architecture/domains/errors.md`](../../../../../architecture/domains/errors.md) определяет typed domain errors;
-- [`architecture/failure-handling.md`](../../../../../architecture/failure-handling.md) определяет unexpected defects;
+- skill `slm-design` определяет владельца, domain contract и source boundary;
+- [`architecture/slm-design/domains/adapters.md`](../../../../../architecture/slm-design/domains/adapters.md) определяет domain adapters;
+- [`architecture/slm-design/domains/errors.md`](../../../../../architecture/slm-design/domains/errors.md) определяет typed domain errors;
+- [`failure-handling.md`](../../../../../failure-handling.md) определяет unexpected defects;
 - [`technologies/swr/get-data.md`](../../../../../technologies/swr/get-data.md) определяет key и cache lifecycle.
 
 ## Структура
@@ -37,27 +36,27 @@ pet/
     └── index.ts
 ```
 
-Названия сегментов являются локальной формой примера. Архитектурные инварианты находятся в domain references, а не в
-самом дереве каталогов.
+Названия сегментов являются локальной формой примера. Архитектурные инварианты определяет SLM, а domain references
+фиксируют выбранные командой формы adapter и error contract.
 
 ## Public facets
 
-- `index.ts` предоставляет framework-independent `getPetAdapter`, модель, error contract и server-safe key generator.
+- `index.ts` предоставляет framework-independent `getPet`, модель, operation-specific error contract и server-safe key generator.
 - `client.ts` предоставляет React hook и не втягивается в server module graph.
 - Mapper, error factories, source errors и API client остаются внутренними.
 
-Внутренний hook импортирует adapter по implementation path, чтобы не зависеть от собственного public barrel. Внешний
-consumer вызывает `getPetAdapter` только через `index.ts` домена.
+Внутренний hook импортирует `getPet` по implementation path, чтобы не зависеть от собственного public barrel. Внешний
+consumer вызывает `getPet` только через `index.ts` домена. Суффикс `.adapter.ts` остаётся деталью внутренней структуры.
 
 `src/infra/pet-store-api` и `src/shared/lib/application-defect` обозначают готовые project capabilities. Пример не
 определяет их реализацию. Настроенный API client считается универсальным; если transport зависит от browser или request
-context, домен открывает соответствующий adapter через отдельный runtime facet.
+context, домен открывает соответствующую operation через отдельный runtime facet.
 
 ## Поток данных
 
 ```text
 useGetPet или внешний consumer
-→ getPetAdapter
+→ getPet
 → petStoreApi.pets.getPet
 → Pet DTO
 → mapPetDto
@@ -65,7 +64,7 @@ useGetPet или внешний consumer
 ```
 
 SWR cache содержит `Pet`, а не DTO. Expected source case adapter преобразует через internal factory в
-`PetDomainError`. Unknown rejection становится `ApplicationDefect` и не попадает в feature consumer как ожидаемая
+`GetPetError`. Unknown rejection становится `ApplicationDefect` и не попадает в feature consumer как ожидаемая
 ошибка.
 
 ## Consumer
@@ -94,13 +93,13 @@ return <PetCard pet={petQuery.pet} />
 ```
 
 Ближайший Error Boundary отвечает за unknown defects, повторно выброшенные hook. Event handlers и mutations используют
-отдельный async defect handler по `architecture/failure-handling.md`.
+отдельный async defect handler по `failure-handling.md`.
 
 ## Что демонстрирует пример
 
 - Доменная модель не выведена из DTO.
-- Adapter является единственной data boundary домена.
-- Hook и внешние consumers используют `getPetAdapter`.
+- Internal adapter является единственной source boundary домена.
+- Hook и внешние consumers используют предметную operation `getPet`.
 - Expected source cases создают typed domain errors через internal factories.
 - Unknown source error не становится `UNEXPECTED` domain code.
-- Public `client` facet передаёт только `PetDomainError`, прошедшую runtime guard.
+- Public `client` facet передаёт только `GetPetError`, прошедшую operation-specific runtime guard.
